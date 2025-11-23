@@ -1,0 +1,12 @@
+/* Remove Vite defaults */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  background: #F4F4EE !important;
+}
+
+/* Optional — keeps things clean */
+a {
+  text-decoration: none;
+  color: inherit;
+}
