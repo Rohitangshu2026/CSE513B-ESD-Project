@@ -5,8 +5,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    // 1. Fetch the logout endpoint
+    window.location.href = "http://localhost:8080/api/employee/logout";
   };
 
   return (

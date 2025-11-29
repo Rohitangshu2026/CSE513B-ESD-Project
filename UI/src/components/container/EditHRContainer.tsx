@@ -1,28 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getHR, updateHR , getHRbyId} from "../../api/hrApi";
+import { updateHR, getHRbyId } from "../../api/hrApi";
 
 const EditHRContainer: React.FC = () => {
   const { name, hrId } = useParams();
   const navigate = useNavigate();
 
-  const [hr, setHr] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    contactNumber: "",
-  });
+  const [hr, setHr] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    contactNumber: string;
+  } | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /** Load HR details from the backend */
   const load = async () => {
     try {
       setLoading(true);
-      const res: any = await getHRbyId(Number(hrId));
-      console.log(res);
+
+      const res: any = await getHRbyId(Number(hrId), name || "");
+
+      if (!res) {
+        navigate("/not-found");
+        return;
+      }
+
+      if (res?.accessDenied === true) {
+        navigate("/access-denied");
+        return;
+      }
 
       setHr({
         firstName: res.firstName,
@@ -30,8 +39,9 @@ const EditHRContainer: React.FC = () => {
         email: res.email,
         contactNumber: res.contactNumber,
       });
-    } catch (err: any) {
-      setError(err?.message || "Unable to load HR details");
+    } catch {
+      navigate("/not-found");
+      return;
     } finally {
       setLoading(false);
     }
@@ -41,9 +51,8 @@ const EditHRContainer: React.FC = () => {
     load();
   }, [hrId]);
 
-  /** Submit changes */
   const handleSubmit = async () => {
-    setError(null);
+    if (!hr) return;
 
     if (!hr.firstName.trim()) {
       setError("First name is required");
@@ -53,7 +62,6 @@ const EditHRContainer: React.FC = () => {
     setSaving(true);
     try {
       await updateHR(hrId!, hr);
-
       navigate(`/org/${name}/hr`);
     } catch (err: any) {
       setError(err?.message || "Unable to update HR");
@@ -62,7 +70,6 @@ const EditHRContainer: React.FC = () => {
     }
   };
 
-  /** Loading UI */
   if (loading) {
     return (
       <div style={styles.pageCenter}>
@@ -71,6 +78,8 @@ const EditHRContainer: React.FC = () => {
     );
   }
 
+  if (!hr) return null;
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
@@ -78,7 +87,7 @@ const EditHRContainer: React.FC = () => {
 
         <div style={styles.form}>
           <input
-            placeholder={hr.firstName}
+            placeholder="First Name"
             style={styles.input}
             value={hr.firstName}
             onChange={(e) => setHr({ ...hr, firstName: e.target.value })}
@@ -119,7 +128,6 @@ const EditHRContainer: React.FC = () => {
 };
 
 /* ------------------------ STYLES ------------------------ */
-
 const styles: Record<string, React.CSSProperties> = {
   page: {
     background: "#F4F4EE",
@@ -128,17 +136,14 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     justifyContent: "center",
   },
-
   pageCenter: {
     textAlign: "center",
     marginTop: 60,
     fontSize: 20,
   },
-
   loadingText: {
     color: "#777",
   },
-
   card: {
     background: "#F8F7F2",
     padding: "40px",
@@ -147,7 +152,6 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "20px",
     boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
   },
-
   heading: {
     textAlign: "center",
     color: "#3A3A3A",
@@ -155,13 +159,11 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     marginBottom: 30,
   },
-
   form: {
     display: "flex",
     flexDirection: "column",
     gap: "15px",
   },
-
   input: {
     padding: "12px 15px",
     borderRadius: "10px",
@@ -169,7 +171,6 @@ const styles: Record<string, React.CSSProperties> = {
     outline: "none",
     fontSize: "15px",
   },
-
   saveBtn: {
     width: "100%",
     marginTop: 20,
@@ -182,7 +183,6 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     color: "#003B47",
   },
-
   error: {
     color: "red",
     marginTop: 20,

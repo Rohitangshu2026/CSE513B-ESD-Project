@@ -6,11 +6,18 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AccessDeniedContainer from "./components/container/AccessDeniedContainer";
+import NotFoundContainer from "./components/container/NotFoundContainer";
+
 import LoginContainer from "./components/container/LoginContainer";
 import RegisterOrgContainer from "./components/container/RegisterOrgContainer";
 import OrgListContainer from "./components/container/OrgListContainer";
 import EditOrgContainer from "./components/container/EditOrgContainer";
 import EditHRContainer from "./components/container/EditHRContainer";
+import ServerErrorContainer from "./components/container/ServerErrorContainer";
 
 import OrgHRListContainer from "./components/container/OrgHRListContainer";
 import AddHRContainer from "./components/container/AddHRContainer";
@@ -23,12 +30,21 @@ function App() {
   return (
     <BrowserRouter>
       <NavbarWrapper />
-
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        pauseOnHover
+        theme="colored"
+      />
       <Routes>
-        {/* Public Route */}
+        
+        {/* Public Routes */}
         <Route path="/" element={<LoginContainer />} />
+        <Route path="/access-denied" element={<AccessDeniedContainer />} />
+        <Route path="/not-found" element={<NotFoundContainer />} />
+        <Route path="/server-error" element={<ServerErrorContainer />} />
 
-        {/* ------------ Organisation Routes ------------ */}
+        {/* Protected Routes */}
         <Route
           path="/org/register"
           element={
@@ -56,7 +72,6 @@ function App() {
           }
         />
 
-        {/* ------------ HR Routes ------------ */}
         <Route
           path="/org/:name/hr"
           element={
@@ -84,21 +99,24 @@ function App() {
           }
         />
 
-        {/* ------------ Fallback ------------ */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/not-found" />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
-/* Hide navbar on login page only */
 function NavbarWrapper() {
   const location = useLocation();
 
-  const hideOn = ["/"]; // login page
-  if (hideOn.includes(location.pathname)) return null;
+  const noNavbarRoutes = ["/"];
+
+  if (noNavbarRoutes.includes(location.pathname)) {
+    return null;
+  }
 
   return <Navbar />;
 }
+
 
 export default App;

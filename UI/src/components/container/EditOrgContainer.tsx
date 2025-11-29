@@ -24,22 +24,6 @@ const EditOrgContainer: React.FC = () => {
         const dto: OrganisationCreateDTO = {
           name: org.name,
           address: org.address
-          // hrContacts:
-          //   org.hrContacts?.map((h: any) => ({
-          //     firstName: h.firstName,
-          //     lastName: h.lastName || "",
-          //     email: h.email || "",
-          //     contactNumber: h.contactNumber || "",
-          //     designation: h.designation || "",
-          //   })) || [
-          //     {
-          //       firstName: "",
-          //       lastName: "",
-          //       email: "",
-          //       contactNumber: "",
-          //       designation: "",
-          //     },
-          //   ],
         };
         setForm(dto);
       } catch (err: any) {
@@ -53,9 +37,6 @@ const EditOrgContainer: React.FC = () => {
 
   const validate = (f: OrganisationCreateDTO) => {
     if (!f.name?.trim()) return "Organisation name is required";
-    // const hr = f.hrContacts?.[0];
-    // if (!hr || !hr.firstName?.trim()) return "HR first name is required";
-    // if (hr.email && !/^\S+@\S+\.\S+$/.test(hr.email)) return "Invalid HR email";
     return null;
   };
 

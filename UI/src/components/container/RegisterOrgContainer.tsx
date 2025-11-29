@@ -7,15 +7,6 @@ import { createOrganisation } from "../../api/orgApi";
 const initialForm = (): OrganisationCreateDTO => ({
   name: "",
   address: "",
-  // hrContacts: [
-  //   {
-  //     firstName: "",
-  //     lastName: "",
-  //     email: "",
-  //     contactNumber: "",
-  //     designation: "",
-  //   },
-  // ],
 });
 
 const RegisterOrgContainer: React.FC = () => {

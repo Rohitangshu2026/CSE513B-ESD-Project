@@ -172,7 +172,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   addBtn: {
     background: "#BBC863",
-    color: "black",
+    color: "#5f605aff",
     padding: "14px 18px",
     borderRadius: "10px",
     textDecoration: "none",

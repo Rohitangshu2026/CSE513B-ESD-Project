@@ -59,7 +59,7 @@ const OrgListContainer: React.FC = () => {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.heading}>Organisations</h1>
+        <h1 style={styles.heading}>Organizations</h1>
 
         <form onSubmit={doSearch} style={styles.searchRow}>
           <input
@@ -81,6 +81,7 @@ const OrgListContainer: React.FC = () => {
           {list.map((org) => (
             <div key={org.id} style={styles.item}>
               <span style={styles.orgName}>{org.name}</span>
+              
 
               <div style={styles.actions}>
                 <Link to={`/org/${org.name}/hr`} style={styles.hrBtn}>HR</Link>
@@ -140,7 +141,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#444",
   },
 
-  searchBtn: {
+   searchBtn: {
     background: "#e4d9d0ff",
     color: "#4F4F4F",
     padding: "14px 18px",
@@ -153,7 +154,7 @@ const styles: Record<string, React.CSSProperties> = {
 
   newBtn: {
     background: "#BBC863",
-    color: "#3A3A3A",
+    color: "#5f605aff",
     padding: "6px 12px",
     borderRadius: "10px",
     border: "none",
@@ -192,7 +193,7 @@ const styles: Record<string, React.CSSProperties> = {
   padding: "6px 12px",
   background: "#D9C4B0",
   borderRadius: "8px",
-  color: "#3A3A3A",
+  color: "#7c6d5fff",
   textDecoration: "none",
   fontWeight: 600,
 },
@@ -201,7 +202,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "6px 12px",
     background: "#BBDCE5",
     borderRadius: "8px",
-    color: "#3A3A3A",
+    color: "#003B47",
     textDecoration: "none",
     fontWeight: 600,
   },
@@ -210,7 +211,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "6px 12px",
     background: "#E57373",
     borderRadius: "8px",
-    color: "#3A3A3A",
+    color: "white",
     border: "none",
     cursor: "pointer",
     fontWeight: 600,

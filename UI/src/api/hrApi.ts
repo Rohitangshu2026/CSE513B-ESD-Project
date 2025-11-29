@@ -6,7 +6,7 @@ import type {
 
 export const getHR = (id: String) => httpGet(`/get/hr/${id}`);
 
-export const getHRbyId = (hrid: number) => httpGet(`/get/hrId/${hrid}`);
+export const getHRbyId = (hrid: number, orgName : string) => httpGet(`/get/hrId/${hrid}/${orgName}`);
 
 export const updateHR = (hrId: string, data: any) =>
   httpPatch(`/update/hr/${hrId}`, data);

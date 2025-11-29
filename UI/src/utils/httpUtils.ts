@@ -1,17 +1,16 @@
-const BASE_URL = "http://localhost:8080/api/employee";
-const getToken = () => localStorage.getItem("token");
+  import { showError } from "./toast";
 
-async function parseJsonSafe(response: Response) {
+  const BASE_URL = "http://localhost:8080/api/employee";
+  //const getToken = () => localStorage.getItem("token");
+
+ async function parseJsonSafe(response: Response): Promise<any | null> {
   try {
     return await response.json();
   } catch {
-    return null; // backend returned non-JSON
+    return null;
   }
 }
 
-// ============================
-// Core Request Wrapper
-// ============================
 async function request<T>(
   method: string,
   url: string,
@@ -21,10 +20,6 @@ async function request<T>(
     "Content-Type": "application/json",
   };
 
-  // Attach JWT if exists
-  const token = getToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
   let response: Response;
 
   try {
@@ -32,75 +27,70 @@ async function request<T>(
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      credentials: "include", 
+      // 💡 Crucial for Logout Fix: Add "manual" redirect mode
+      // The browser will NOT follow redirects automatically on a 302,
+      // letting you inspect the redirect status if needed, though for standard
+      // API calls, 'follow' is usually default/fine. Leaving it out uses default ('follow').
     });
-  } catch (networkErr) {
-    // ⋙ Network error (backend down)
-    console.error("NETWORK ERROR:", networkErr);
-    throw new Error("Cannot connect to the server. Please try again later.");
+    console.log(response);
+  } catch (_) {
+    showError("Unable to reach server");
+    throw new Error("Network error");
   }
-
-  // ============================
-  // Handle 401 Unauthorized
-  // ============================
-  if (response.status === 401) {
-    console.warn("Unauthorized — clearing token and redirecting");
-    localStorage.removeItem("token");
-    window.location.href = "/";
-    throw new Error("Session expired. Please login again.");
-  }
-
-  // ============================
-  // Handle success responses
-  // ============================
+  // 1. Check for success (200-299)
   if (response.ok) {
-    return parseJsonSafe(response) as Promise<T>;
+    // Return the response body for success cases
+    return (await parseJsonSafe(response)) as T; 
   }
-
-  // ============================
-  // Handle API error responses (400, 404, 500, ...)
-  // ============================
-  const errorBody = await parseJsonSafe(response);
-
-  // Smart error message selection
-  let errorMessage = "Something went wrong.";
-
-  if (errorBody) {
-    // Patterns depending on backend style
-    if (typeof errorBody === "string") {
-      errorMessage = errorBody;
-    } else if (errorBody.error) {
-      errorMessage = errorBody.error;
-    } else if (errorBody.message) {
-      errorMessage = errorBody.message;
-    }
-  } else {
-    // fallback to status text
-    errorMessage = response.statusText || errorMessage;
+  else{
+    // 2. Handle known error status codes
+  switch (response.status) {
+    case 401:
+      // Unauthorized: Missing or expired session
+      window.location.href = "/";
+      throw new Error("Unauthorized");
+    case 403:
+      // Forbidden: Insufficient permissions
+      window.location.href = "/access-denied";
+      throw new Error("Forbidden");
+    case 404:
+      // Not Found
+      window.location.href = "/not-found";
+      throw new Error("Not Found");
+    case 500:
+    case 503: 
+      // Internal Server Error or Service Unavailable
+      window.location.href = "/server-error";
+      throw new Error("Server Error");
+    default:
+      // Handle all other HTTP errors (e.g., 400 Bad Request)
+      // Attempt to get a detailed error message from the response body if available
+      const errorBody = await parseJsonSafe(response);
+      const errorMessage = errorBody?.message || `HTTP Error: ${response.status} ${response.statusText}`;
+      showError(errorMessage); // Show a toast/UI error for other client/server issues
+      throw new Error(errorMessage);
   }
-
-  console.error(
-    `API ERROR → [${method}] ${url} → ${response.status}: ${errorMessage}`
-  );
-
-  throw new Error(errorMessage);
+  }
 }
 
-// ============================
-// Exported helpers
-// ============================
-export const httpGet = <T>(url: string) => request<T>("GET", url);
-export const httpPost = <T>(url: string, body?: any) =>
-  request<T>("POST", url, body);
-export const httpPut = <T>(url: string, body?: any) =>
-  request<T>("PUT", url, body);
-export const httpDelete = <T>(url: string) => request<T>("DELETE", url);
-export const httpPatch = <T>(url: string, body?: any) =>
-  request<T>("PATCH", url, body);
+  export const httpGet = <T>(url: string) => request<T>("GET", url);
+  export const httpPost = <T>(url: string, body?: any) =>
+    request<T>("POST", url, body);
+  export const httpPut = <T>(url: string, body?: any) =>
+    request<T>("PUT", url, body);
+  export const httpDelete = <T>(url: string) => request<T>("DELETE", url);
+  export const httpPatch = <T>(url: string, body?: any) =>
+    request<T>("PATCH", url, body);
 
-export default {
-  httpGet,
-  httpPost,
-  httpPut,
-  httpDelete,
-  httpPatch
-};
+  export default {
+    httpGet,
+    httpPost,
+    httpPut,
+    httpDelete,
+    httpPatch
+  };
+
+  export function showServerErrorPageForISE() {
+    window.location.href = "/server-error";
+  }
