@@ -28,7 +28,8 @@ public class OrganizationDetailsService {
         return organizationDetailsRepo.findAll();
     }
 
-    public Optional<Iterable<Organization_HR>> listAllHrDetails(String organizationName) {
+    public Optional<Iterable<Organization_HR>> listAllHrDetails(String organizationName) throws RuntimeException {
+        OrganizationDetails orgDetails = organizationDetailsRepo.findByName(organizationName).orElseThrow(() -> new RuntimeException("Org not found"));
         OrganizationDetails existingOrgDetails  = organizationDetailsRepo.findByName(organizationName).orElse(null);
         if(existingOrgDetails != null) {
             int orgId = existingOrgDetails.getId();
@@ -38,8 +39,13 @@ public class OrganizationDetailsService {
     }
 
     public String updateOrganizationDetailsByName(String orgName, OrganizationDetails newOrganizationDetails) {
-        OrganizationDetails existingOrgDetails = organizationDetailsRepo.findByName(orgName)
-                .orElseThrow(() -> new RuntimeException("The Employee id doesn't exist"));
+        //OrganizationDetails existingOrgDetails = organizationDetailsRepo.findByName(orgName)
+            ///    .orElseThrow(() -> new RuntimeException("The Employee id doesn't exist"));
+        List<OrganizationDetails> orgWithName = organizationDetailsRepo.findByNameContainingIgnoreCase(orgName);
+        if(orgWithName.size() > 1) {
+            new RuntimeException("Multiple organizations with same name found!");
+        }
+        OrganizationDetails existingOrgDetails = orgWithName.get(0);
         System.out.println("Got existing details");
         String[] ignoreProps = NullFieldFilter.getNullPropertyNames(newOrganizationDetails);
         String[] finalIgnore = Arrays.copyOf(ignoreProps, ignoreProps.length + 1);
@@ -101,9 +107,20 @@ public class OrganizationDetailsService {
         return fullNameSearch;
     }
 
-    public Organization_HR getOrgHrByHrId(int hrId) {
+    public Organization_HR getOrgHrByHrId(int hrId, String orgName) throws RuntimeException{
         Organization_HR hrDetails = organizationHrRepo.findById(hrId)
                 .orElseThrow(() -> new RuntimeException("The Employee id doesn't exist"));
-        return hrDetails;
+        Optional<OrganizationDetails> org = organizationDetailsRepo.findByName(orgName);
+        int orgId;
+        if(org.isPresent()) {
+            orgId = org.get().getId();
+            if(hrDetails.getOrganizationId() != orgId) {
+                throw new RuntimeException("The Employee id doesn't exist");
+            }
+            else {
+                return hrDetails;
+            }
+        }
+        throw new RuntimeException("The org hr with this org name does not exist");
     }
 }
